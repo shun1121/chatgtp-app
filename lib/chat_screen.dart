@@ -4,8 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:mixi_training/textfield_page.dart';
-
 import 'chat_message.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -27,8 +25,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Uri.parse('https://api.openai.com/v1/chat/completions'),
           headers: {
             'Content-Type': 'application/json',
-            'Authorization':
-                'Bearer $apiKey'
+            'Authorization': 'Bearer $apiKey'
           },
           body: jsonEncode({
             'model': 'gpt-3.5-turbo',
@@ -61,32 +58,11 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Expanded(
-          //   child: ListView.builder(
-          //     itemCount: messages.length,
-          //     itemBuilder: (context, index) {
-          //       print('ddddddddddd');
-          //       print(messages[index]);
-          //       return messages[index];
-          //     },
-          //   ),
-          // ),
           Expanded(
             child: ListView.builder(
               itemCount: messages.length,
               itemBuilder: (context, index) {
-                // final message = messages[index];
-                final message = messages[index];
-                print("Message at index $index: ${message.text}");
-                return ChatMessage(text: message.text, isUser: message.isUser);
-                // return ListTile(
-                //   title: Text(
-                //     message.text,
-                //     style: TextStyle(
-                //       color: message.isUser ? Colors.blue : Colors.green,
-                //     ),
-                //   ),
-                // );
+                return messages[index];
               },
             ),
           ),
@@ -111,45 +87,20 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void handleSubmit() async {
-    try {
-      String response = await getChatGPTResponse(_controller.text);
-      ChatMessage userMessage =
-          ChatMessage(text: _controller.text, isUser: true);
-      ChatMessage botMessage = ChatMessage(text: response, isUser: false);
+    if (_controller.text.isEmpty) return;
 
-      print("User message: ${userMessage.text}");
-      print("Bot response: ${botMessage.text}");
-
-      setState(() {
-        messages.insert(0, botMessage);
-        messages.insert(0, userMessage);
-      });
-      _controller.clear();
-    } catch (e) {
-      print('Error in handleSubmit: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('エラーが発生しました: $e')),
-      );
-    }
+    String userMessage = _controller.text;
+    ChatMessage message = ChatMessage(text: userMessage, isUser: true);
+    setState(() {
+      messages.add(message);
+    });
+    
+    _controller.clear();
+    String response = await getChatGPTResponse(userMessage);
+    ChatMessage responseMessage = ChatMessage(text: response, isUser: false);
+    setState(() {
+      messages.add(responseMessage);
+    });
   }
 
-  // void handleSubmit() async {
-  //   if (_controller.text.isEmpty) return;
-
-  //   ChatMessage message = ChatMessage(text: _controller.text, isUser: true);
-
-  //   setState(() {
-  //     messages.insert(0, message);
-  //   });
-
-  //   String response = await getChatGPTResponse(_controller.text);
-
-  //   ChatMessage responseMessage = ChatMessage(text: response, isUser: false);
-
-  //   setState(() {
-  //     messages.insert(0, responseMessage);
-  //   });
-
-  //   _controller.clear();
-  // }
 }
