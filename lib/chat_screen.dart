@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'answer.dart';
 import 'chat_message.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -35,9 +36,10 @@ class _ChatScreenState extends State<ChatScreen> {
           }),
           encoding: Encoding.getByName('utf-8'));
       if (response.statusCode == 200) {
-        var decodedResponse = utf8.decode(response.bodyBytes);
-        var data = jsonDecode(decodedResponse);
-        return data['choices'][0]['message']['content'];
+        Map<String, dynamic> body = json.decode(utf8.decode(response.bodyBytes));
+        // jsonをAnswerモデルの型に変換する
+        final answer = Answer.fromJson(body);
+        return answer.choices.first.message.content;
       } else {
         print('Error status code: ${response.statusCode}');
         throw Exception('Failed to get response: ${response.statusCode}');
