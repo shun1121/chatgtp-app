@@ -36,7 +36,8 @@ class _ChatScreenState extends State<ChatScreen> {
           }),
           encoding: Encoding.getByName('utf-8'));
       if (response.statusCode == 200) {
-        Map<String, dynamic> body = json.decode(utf8.decode(response.bodyBytes));
+        Map<String, dynamic> body =
+            json.decode(utf8.decode(response.bodyBytes));
         // jsonをAnswerモデルの型に変換する
         final answer = Answer.fromJson(body);
         return answer.choices.first.message.content;
@@ -64,6 +65,14 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView.builder(
               itemCount: messages.length,
               itemBuilder: (context, index) {
+                if (messages[index].isLoading) {
+                  return const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                    ],
+                  );
+                }
                 return messages[index];
               },
             ),
@@ -96,11 +105,17 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       messages.add(message);
     });
-    
     _controller.clear();
+
+    // ローディングメッセージを追加
+    setState(() {
+      messages.add(const ChatMessage(text: "", isUser: false, isLoading: true));
+    });
+
     String response = await getChatGPTResponse(userMessage);
     ChatMessage responseMessage = ChatMessage(text: response, isUser: false);
     setState(() {
+      messages.removeWhere((msg) => msg.isLoading);
       messages.add(responseMessage);
     });
   }
