@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:mixi_training/providers/chat_state_provider.dart';
+import 'package:provider/provider.dart';
 import 'answer.dart';
 import 'chat_message.dart';
 
@@ -18,8 +20,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   String apiKey = dotenv.env['API_KEY'] ?? 'APIキーが見つかりません';
-  List<ChatMessage> messages = [];
-
+  
   Future<String> getChatGPTResponse(String prompt) async {
     try {
       final response = await http.post(
@@ -62,18 +63,22 @@ class _ChatScreenState extends State<ChatScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                if (messages[index].isLoading) {
-                  return const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                    ],
-                  );
-                }
-                return messages[index];
+            child: Consumer<ChatStateProvider>(
+              builder: (context, chatStateProvider, child) {
+                return ListView.builder(
+                  itemCount: chatStateProvider.messages.length,
+                  itemBuilder: (context, index) {
+                    if (chatStateProvider.messages[index].isLoading) {
+                      return const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                        ],
+                      );
+                    }
+                    return chatStateProvider.messages[index];
+                  },
+                );
               },
             ),
           ),
@@ -102,22 +107,19 @@ class _ChatScreenState extends State<ChatScreen> {
 
     String userMessage = _controller.text;
     ChatMessage message = ChatMessage(text: userMessage, isUser: true);
-    setState(() {
-      messages.add(message);
-    });
+    Provider.of<ChatStateProvider>(context, listen: false).addMessage(message);
     _controller.clear();
 
     // ローディングメッセージを追加
-    setState(() {
-      messages.add(const ChatMessage(text: "", isUser: false, isLoading: true));
-    });
+    Provider.of<ChatStateProvider>(context, listen: false).addMessage(
+        const ChatMessage(text: "", isUser: false, isLoading: true));
 
     String response = await getChatGPTResponse(userMessage);
     ChatMessage responseMessage = ChatMessage(text: response, isUser: false);
-    setState(() {
-      messages.removeWhere((msg) => msg.isLoading);
-      messages.add(responseMessage);
-    });
-  }
 
+    Provider.of<ChatStateProvider>(context, listen: false)
+        .removeLoadingMessage();
+    Provider.of<ChatStateProvider>(context, listen: false)
+        .addMessage(responseMessage);
+  }
 }

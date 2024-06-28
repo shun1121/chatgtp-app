@@ -17,7 +17,7 @@ class ChatMessage extends StatelessWidget {
         children: [
           Flexible(
             child: Container(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
                 color: isUser ? Colors.blue[100] : Colors.green[100],
                 borderRadius: BorderRadius.circular(8.0),
@@ -30,7 +30,6 @@ class ChatMessage extends StatelessWidget {
               ),
             ),
           ),
-          // Text(text)
         ],
       ),
     );
