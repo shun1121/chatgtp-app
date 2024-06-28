@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mixi_training/chat_screen.dart';
-import 'package:mixi_training/first_page.dart';
+import 'package:mixi_training/providers/chat_state_provider.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
-import 'my_home_page.dart';
 
 void main() async {
   await dotenv.load(fileName: '.env');
   HttpOverrides.global = MyHttpOverrides();
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ChatStateProvider(),
+      child: const MyApp(),
+    ),
+    // MultiProvider(
+    //   providers: [],
+    //   child: const MyApp(),
+    // ),
+  );
 }
 
 class MyHttpOverrides extends HttpOverrides {

@@ -5,7 +5,6 @@ part 'answer.g.dart';
 // jsonをモデル化する
 @JsonSerializable()
 class Answer {
-  /// The generated code assumes these values exist in JSON.
   String id;
   String object;
   int created;
@@ -13,8 +12,6 @@ class Answer {
   List<Choice> choices;
   Usage usage;
 
-  /// The generated code below handles if the corresponding JSON value doesn't
-  /// exist or is empty.
   Answer(
       {required this.id,
       required this.object,
@@ -23,11 +20,8 @@ class Answer {
       required this.choices,
       required this.usage});
 
-  /// Connect the generated [_$AnswerFromJson] function to the `fromJson`
-  /// factory.
   factory Answer.fromJson(Map<String, dynamic> json) => _$AnswerFromJson(json);
 
-  /// Connect the generated [_$AnswerToJson] function to the `toJson` method.
   Map<String, dynamic> toJson() => _$AnswerToJson(this);
 }
 
