@@ -8,6 +8,8 @@ import 'package:mixi_training/providers/chat_state_provider.dart';
 import 'package:provider/provider.dart';
 import 'answer.dart';
 import 'chat_message.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'login_page.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key, required this.title});
@@ -52,12 +54,49 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void handleSubmit() async {
+    if (_controller.text.isEmpty) return;
+
+    String userMessage = _controller.text;
+    ChatMessage message = ChatMessage(text: userMessage, isUser: true);
+    Provider.of<ChatStateProvider>(context, listen: false).addMessage(message);
+    _controller.clear();
+
+    // ローディングメッセージを追加
+    Provider.of<ChatStateProvider>(context, listen: false).addMessage(
+        const ChatMessage(text: "", isUser: false, isLoading: true));
+
+    String response = await getChatGPTResponse(userMessage);
+    ChatMessage responseMessage = ChatMessage(text: response, isUser: false);
+
+    Provider.of<ChatStateProvider>(context, listen: false)
+        .removeLoadingMessage();
+    Provider.of<ChatStateProvider>(context, listen: false)
+        .addMessage(responseMessage);
+  }
+
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const LoginPage(title: 'ログイン')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+          const SizedBox(
+            width: 10,
+          )
+        ],
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -100,26 +139,5 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
     );
-  }
-
-  void handleSubmit() async {
-    if (_controller.text.isEmpty) return;
-
-    String userMessage = _controller.text;
-    ChatMessage message = ChatMessage(text: userMessage, isUser: true);
-    Provider.of<ChatStateProvider>(context, listen: false).addMessage(message);
-    _controller.clear();
-
-    // ローディングメッセージを追加
-    Provider.of<ChatStateProvider>(context, listen: false).addMessage(
-        const ChatMessage(text: "", isUser: false, isLoading: true));
-
-    String response = await getChatGPTResponse(userMessage);
-    ChatMessage responseMessage = ChatMessage(text: response, isUser: false);
-
-    Provider.of<ChatStateProvider>(context, listen: false)
-        .removeLoadingMessage();
-    Provider.of<ChatStateProvider>(context, listen: false)
-        .addMessage(responseMessage);
   }
 }

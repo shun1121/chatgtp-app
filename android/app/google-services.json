@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "655637695133",
+    "project_id": "flutter-chat-app-6eefe",
+    "storage_bucket": "flutter-chat-app-6eefe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:655637695133:android:4aaecd0b597e939422a274",
+        "android_client_info": {
+          "package_name": "com.example.mixi_training"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5nbCR9H3wVsTBaNsh4l5WBHw2WHeq0mI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
