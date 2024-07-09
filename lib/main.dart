@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mixi_training/chat_screen.dart';
+import 'package:mixi_training/login_page.dart';
 import 'package:mixi_training/providers/chat_state_provider.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   await dotenv.load(fileName: '.env');
   HttpOverrides.global = MyHttpOverrides();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(
     ChangeNotifierProvider(
       create: (context) => ChatStateProvider(),
       child: const MyApp(),
     ),
-    // MultiProvider(
-    //   providers: [],
-    //   child: const MyApp(),
-    // ),
   );
 }
 
@@ -42,9 +42,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: 
-      const ChatScreen(title: 'Chat Screen')
-      // const FirstPage(),
-      // const MyHomePage(title: 'Flutter Demo Home Page'),
+      const LoginPage(title: 'ログイン'),
     );
   }
 }
