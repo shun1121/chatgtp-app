@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,7 +22,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   String apiKey = dotenv.env['API_KEY'] ?? 'APIキーが見つかりません';
-  
+
   Future<String> getChatGPTResponse(String prompt) async {
     try {
       final response = await http.post(
@@ -59,7 +59,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
     String userMessage = _controller.text;
     ChatMessage message = ChatMessage(text: userMessage, isUser: true);
+
     Provider.of<ChatStateProvider>(context, listen: false).addMessage(message);
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('messages')
+        .add({
+      'message': message.text, // messageのtextフィールドを使用
+      'isUser': message.isUser, // 必要に応じて他のフィールドも追加
+      'timestamp': FieldValue.serverTimestamp()
+    });
     _controller.clear();
 
     // ローディングメッセージを追加
@@ -68,6 +79,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
     String response = await getChatGPTResponse(userMessage);
     ChatMessage responseMessage = ChatMessage(text: response, isUser: false);
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('messages')
+        .add({
+      'message': responseMessage.text, // responseMessageのtextフィールドを使用
+      'isUser': responseMessage.isUser, // 必要に応じて他のフィールドも追加
+      'timestamp': FieldValue.serverTimestamp()
+    });
 
     Provider.of<ChatStateProvider>(context, listen: false)
         .removeLoadingMessage();
@@ -128,6 +149,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
                     decoration: const InputDecoration(hintText: 'テキスト入力'),
                   ),
                 ),
