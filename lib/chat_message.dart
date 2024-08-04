@@ -25,8 +25,7 @@ class ChatMessage extends StatelessWidget {
               child: Text(
                 text,
                 softWrap: true,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 10,
+                overflow: TextOverflow.visible,
               ),
             ),
           ),

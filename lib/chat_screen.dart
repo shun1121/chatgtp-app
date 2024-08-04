@@ -59,9 +59,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
     String userMessage = _controller.text;
     ChatMessage message = ChatMessage(text: userMessage, isUser: true);
+
     Provider.of<ChatStateProvider>(context, listen: false).addMessage(message);
     String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    await FirebaseFirestore.instance.collection('users').doc(userId).collection('messages').add({
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('messages')
+        .add({
       'message': message.text, // messageのtextフィールドを使用
       'isUser': message.isUser, // 必要に応じて他のフィールドも追加
       'timestamp': FieldValue.serverTimestamp()
@@ -75,7 +80,11 @@ class _ChatScreenState extends State<ChatScreen> {
     String response = await getChatGPTResponse(userMessage);
     ChatMessage responseMessage = ChatMessage(text: response, isUser: false);
 
-    await FirebaseFirestore.instance.collection('users').doc(userId).collection('messages').add({
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('messages')
+        .add({
       'message': responseMessage.text, // responseMessageのtextフィールドを使用
       'isUser': responseMessage.isUser, // 必要に応じて他のフィールドも追加
       'timestamp': FieldValue.serverTimestamp()
@@ -140,6 +149,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
                     decoration: const InputDecoration(hintText: 'テキスト入力'),
                   ),
                 ),
