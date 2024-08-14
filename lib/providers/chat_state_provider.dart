@@ -1,5 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-
 import '../chat_message.dart';
 
 class ChatStateProvider extends ChangeNotifier {
@@ -16,17 +17,26 @@ class ChatStateProvider extends ChangeNotifier {
     _messages.removeWhere((msg) => msg.isLoading);
     notifyListeners();
   }
+
+  Future<void> endChat() async {
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    List<Map<String, dynamic>> messagesData = _messages
+        .map((message) => {
+              'text': message.text,
+            })
+        .toList();
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('messages')
+        .add({
+      'messages': messagesData,
+      'chatEndedAt': Timestamp.now(),
+    });
+
+    _messages.clear();
+    notifyListeners();
+
+  }
 }
-
-// 例
-
-// class BannerStateProvider extends ChangeNotifier {
-//   int _currentIndex = 0;
-// 
-//   int get currentIndex => _currentIndex;
-// 
-//   void setIndex(int index) {
-//     _currentIndex = index;
-//     notifyListeners();
-//   }
-// }

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -61,16 +60,6 @@ class _ChatScreenState extends State<ChatScreen> {
     ChatMessage message = ChatMessage(text: userMessage, isUser: true);
 
     Provider.of<ChatStateProvider>(context, listen: false).addMessage(message);
-    String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('messages')
-        .add({
-      'message': message.text, // messageのtextフィールドを使用
-      'isUser': message.isUser, // 必要に応じて他のフィールドも追加
-      'timestamp': FieldValue.serverTimestamp()
-    });
     _controller.clear();
 
     // ローディングメッセージを追加
@@ -80,20 +69,16 @@ class _ChatScreenState extends State<ChatScreen> {
     String response = await getChatGPTResponse(userMessage);
     ChatMessage responseMessage = ChatMessage(text: response, isUser: false);
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('messages')
-        .add({
-      'message': responseMessage.text, // responseMessageのtextフィールドを使用
-      'isUser': responseMessage.isUser, // 必要に応じて他のフィールドも追加
-      'timestamp': FieldValue.serverTimestamp()
-    });
-
     Provider.of<ChatStateProvider>(context, listen: false)
         .removeLoadingMessage();
     Provider.of<ChatStateProvider>(context, listen: false)
         .addMessage(responseMessage);
+  }
+
+  void handleEndChat() {
+    Provider.of<ChatStateProvider>(context, listen: false)
+        .endChat();
+    Navigator.of(context).pop();
   }
 
   Future<void> _logout() async {
@@ -146,6 +131,8 @@ class _ChatScreenState extends State<ChatScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
+                IconButton(
+                    onPressed: handleEndChat, icon: const Icon(Icons.sports_baseball_outlined)),
                 Expanded(
                   child: TextField(
                     controller: _controller,
