@@ -7,8 +7,6 @@ import 'package:mixi_training/providers/chat_state_provider.dart';
 import 'package:provider/provider.dart';
 import 'answer.dart';
 import 'chat_message.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'login_page.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key, required this.title});
@@ -76,77 +74,71 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void handleEndChat() {
-    Provider.of<ChatStateProvider>(context, listen: false)
-        .endChat();
+    Provider.of<ChatStateProvider>(context, listen: false).endChat();
     Navigator.of(context).pop();
-  }
-
-  Future<void> _logout() async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const LoginPage(title: 'ログイン')),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
+            icon: const Icon(Icons.upload),
+            onPressed: handleEndChat,
           ),
           const SizedBox(
             width: 10,
           )
         ],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Consumer<ChatStateProvider>(
-              builder: (context, chatStateProvider, child) {
-                return ListView.builder(
-                  itemCount: chatStateProvider.messages.length,
-                  itemBuilder: (context, index) {
-                    if (chatStateProvider.messages[index].isLoading) {
-                      return const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(),
-                        ],
-                      );
-                    }
-                    return chatStateProvider.messages[index];
-                  },
-                );
-              },
+      body: Container(
+        padding: const EdgeInsets.only(bottom:24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Consumer<ChatStateProvider>(
+                builder: (context, chatStateProvider, child) {
+                  return ListView.builder(
+                    itemCount: chatStateProvider.messages.length,
+                    itemBuilder: (context, index) {
+                      if (chatStateProvider.messages[index].isLoading) {
+                        return const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                          ],
+                        );
+                      }
+                      return chatStateProvider.messages[index];
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                IconButton(
-                    onPressed: handleEndChat, icon: const Icon(Icons.sports_baseball_outlined)),
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    keyboardType: TextInputType.multiline,
-                    maxLines: null,
-                    decoration: const InputDecoration(hintText: 'テキスト入力'),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null,
+                      decoration: const InputDecoration(hintText: 'テキスト入力'),
+                    ),
                   ),
-                ),
-                IconButton(
-                    onPressed: handleSubmit, icon: const Icon(Icons.send))
-              ],
-            ),
-          )
-        ],
+                  IconButton(
+                      onPressed: handleSubmit, icon: const Icon(Icons.send))
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
