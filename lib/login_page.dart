@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'top.dart';
 import 'chat_screen.dart';
 
 class LoginPage extends StatefulWidget {
@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       print("User logged in: ${credential.user}");
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const ChatScreen(title: 'ChatGPT Chat')),
+        MaterialPageRoute(builder: (context) => const TopPage(title: 'Top page')),
       );
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
